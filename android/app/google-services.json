@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "855518512229",
+    "project_id": "voice-based-notification",
+    "storage_bucket": "voice-based-notification.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:855518512229:android:8fdc9fea0a464c7e7b328c",
+        "android_client_info": {
+          "package_name": "com.example.voice_based_notification"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB-Xj_OeVHp4q3FOwXqJSawhrOcRuzZCSs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
