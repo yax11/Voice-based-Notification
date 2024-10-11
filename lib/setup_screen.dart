@@ -2,10 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'variables.dart'; // Assuming you have primaryColor in variables.dart
-import '/api/api_services.dart'; // Import the ApiService
-import 'package:device_info_plus/device_info_plus.dart'; // Add this import
+import 'variables.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 
 class SetupScreen extends StatefulWidget {
   @override
@@ -18,14 +16,11 @@ class _SetupScreenState extends State<SetupScreen> {
   String? _selectedDepartment;
   String? _selectedYear;
 
-  // FCM token and app ID
+  final TextEditingController _uniqueIdController = TextEditingController();
+
   String? _fcmToken;
   String? _appId;
 
-  // Secure storage for saving information
-  final storage = const FlutterSecureStorage();
-
-  // Faculty and departments data
   final Map<String, List<String>> _facultiesAndDepartments = {
     'Natural and Applied Sciences': [
       'Computer Science',
@@ -48,13 +43,7 @@ class _SetupScreenState extends State<SetupScreen> {
       'International Law',
       'Constitutional Law'
     ],
-    'Arts': [
-      'Literature',
-      'History',
-      'Philosophy',
-      'Linguistics',
-      'Fine Arts'
-    ],
+    'Arts': ['Literature', 'History', 'Philosophy', 'Linguistics', 'Fine Arts'],
   };
 
   // List of available years/levels
@@ -64,10 +53,6 @@ class _SetupScreenState extends State<SetupScreen> {
     'Year 3',
     'Year 4',
   ];
-
-  // Instance of the ApiService
-  final ApiService apiService = ApiService();
-
   // State variables for loading and button disabling
   bool _isLoading = false;
 
@@ -113,7 +98,9 @@ class _SetupScreenState extends State<SetupScreen> {
 
   // Save student information to secure storage and send to the server
   Future<void> _saveStudentInformation() async {
-    if (_selectedFaculty != null && _selectedDepartment != null && _selectedYear != null) {
+    if (_selectedFaculty != null &&
+        _selectedDepartment != null &&
+        _selectedYear != null) {
       // Prepare the data to send
       Map<String, String> studentData = {
         'name': 'Student Name', // Ensure this is provided
@@ -122,13 +109,11 @@ class _SetupScreenState extends State<SetupScreen> {
         'year': _selectedYear!,
         'fcmToken': _fcmToken ?? '',
         'appId': _appId ?? '',
-        // 'appInstallationId': _appId ?? '' // Ensure this is provided
-      'appInstallationId': _deviceId ?? _fcmToken ?? '' // Use device ID or FCM token as fallback
+        'appInstallationId': _deviceId ?? _fcmToken ?? '',
+        'userUniqueId': _uniqueIdController.text.isNotEmpty
+            ? _uniqueIdController.text
+            : '', // Optional Unique ID
       };
-
-      studentData.forEach((item, index){
-        print(item);
-      });
 
       setState(() {
         _isLoading = true; // Show loading and disable the button
@@ -142,7 +127,16 @@ class _SetupScreenState extends State<SetupScreen> {
 
         if (response.statusCode == 201) {
           // Save data in secure storage
-          await storage.write(key: 'student_information', value: jsonEncode(studentData));
+          await storage.write(
+              key: 'student_information', value: jsonEncode(studentData));
+
+          // Read the data back from secure storage to verify it's saved
+          String? storedData = await storage.read(key: 'student_information');
+          if (storedData != null) {
+            print('Student information successfully written to storage: $storedData');
+          } else {
+            print('Failed to read student information from storage.');
+          }
 
           // Navigate to the dashboard
           Navigator.pushReplacementNamed(context, '/dashboard');
@@ -169,7 +163,7 @@ class _SetupScreenState extends State<SetupScreen> {
       // Show a warning message if any field is not selected
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Please select all fields.'),
+          content: Text('Please fill all fields, except Unique ID (optional).'),
         ),
       );
     }
@@ -212,7 +206,8 @@ class _SetupScreenState extends State<SetupScreen> {
                       fontWeight: FontWeight.w500, // Less bold
                     ),
                   ),
-                  const SizedBox(height: 10), // Spacing between text and dropdown
+                  const SizedBox(
+                      height: 10), // Spacing between text and dropdown
                   DropdownButton<String>(
                     value: _selectedFaculty,
                     isExpanded: true,
@@ -226,11 +221,13 @@ class _SetupScreenState extends State<SetupScreen> {
                     onChanged: (String? newValue) {
                       setState(() {
                         _selectedFaculty = newValue;
-                        _selectedDepartment = null; // Reset department selection
+                        _selectedDepartment =
+                            null; // Reset department selection
                       });
                     },
                   ),
-                  const SizedBox(height: 30), // Increased space between sections
+                  const SizedBox(
+                      height: 30), // Increased space between sections
 
                   // Department Dropdown
                   const Text(
@@ -240,7 +237,8 @@ class _SetupScreenState extends State<SetupScreen> {
                       fontWeight: FontWeight.w500, // Less bold
                     ),
                   ),
-                  const SizedBox(height: 10), // Spacing between text and dropdown
+                  const SizedBox(
+                      height: 10), // Spacing between text and dropdown
                   DropdownButton<String>(
                     value: _selectedDepartment,
                     isExpanded: true,
@@ -248,19 +246,20 @@ class _SetupScreenState extends State<SetupScreen> {
                     items: _selectedFaculty == null
                         ? []
                         : _facultiesAndDepartments[_selectedFaculty]!
-                        .map((String department) {
-                      return DropdownMenuItem<String>(
-                        value: department,
-                        child: Text(department),
-                      );
-                    }).toList(),
+                            .map((String department) {
+                            return DropdownMenuItem<String>(
+                              value: department,
+                              child: Text(department),
+                            );
+                          }).toList(),
                     onChanged: (String? newValue) {
                       setState(() {
                         _selectedDepartment = newValue;
                       });
                     },
                   ),
-                  const SizedBox(height: 30), // Increased space between sections
+                  const SizedBox(
+                      height: 30), // Increased space between sections
 
                   // Year/Level Dropdown
                   const Text(
@@ -270,7 +269,8 @@ class _SetupScreenState extends State<SetupScreen> {
                       fontWeight: FontWeight.w500, // Less bold
                     ),
                   ),
-                  const SizedBox(height: 10), // Spacing between text and dropdown
+                  const SizedBox(
+                      height: 10), // Spacing between text and dropdown
                   DropdownButton<String>(
                     value: _selectedYear,
                     isExpanded: true,
@@ -287,6 +287,37 @@ class _SetupScreenState extends State<SetupScreen> {
                       });
                     },
                   ),
+                  const SizedBox(
+                      height: 30), // Space before the unique ID field
+
+                  // Unique ID Text Field
+                  const Text(
+                    'Enter Unique ID',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(
+                      height: 10), // Spacing between text and text field
+                  TextField(
+                    controller: _uniqueIdController,
+                    decoration: InputDecoration(
+                      hintText: 'Enter your unique ID',
+                      enabledBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(
+                            color: Colors
+                                .grey), // Set the color of the bottom border
+                      ),
+                      focusedBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(
+                            color: primaryColor,
+                            width:
+                                2.0), // Change color and thickness when focused
+                      ),
+                    ),
+                  ),
+
                   const SizedBox(height: 40), // Space before the button
 
                   // Submit Button with Loading Indicator
@@ -294,17 +325,23 @@ class _SetupScreenState extends State<SetupScreen> {
                     child: _isLoading
                         ? const CircularProgressIndicator() // Show loading indicator if loading
                         : ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: primaryColor, // Button color
-                        side: BorderSide(color: primaryColor), // Border color as primary color
-                        textStyle: TextStyle(color: primaryColor), // Text color
-                      ),
-                      onPressed: _isLoading ? null : _saveStudentInformation, // Disable button while loading
-                      child: const Text(
-                        'Continue',
-                        style: TextStyle(color: Colors.black), // Text color
-                      ),
-                    ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: primaryColor, // Button color
+                              side: BorderSide(
+                                  color:
+                                      primaryColor), // Border color as primary color
+                              textStyle:
+                                  TextStyle(color: primaryColor), // Text color
+                            ),
+                            onPressed: _isLoading
+                                ? null
+                                : _saveStudentInformation, // Disable button while loading
+                            child: const Text(
+                              'Continue',
+                              style:
+                                  TextStyle(color: Colors.black), // Text color
+                            ),
+                          ),
                   ),
                 ],
               ),

@@ -44,30 +44,37 @@ dependencies:
   firebase_core: ^2.24.2
   firebase_messaging: ^14.7.10
   device_info_plus: ^10.1.2
+  audioplayers: ^6.1.0
+  flutter_sound: ^9.6.0
+  permission_handler: ^11.3.1
+  path_provider: ^2.1.4
+  shared_preferences: ^2.3.2
+  just_audio: ^0.9.40
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
 flutter_launcher_icons:
-  image_path: "assets/bell.png"
+  android: true
+  image_path: "assets/icon.png"
   min_sdk_android: 21
   web:
     generate: true
-    image_path: "assets/bell.png"
+    image_path: "assets/icon.png"
     background_color: "#ffffff"
     theme_color: "#FFC42E"
 
 flutter_native_splash:
   color: "#ffffff"  # Background color for light theme
-  image: assets/bell.png  # Path to the splash screen image for light theme
+  image: assets/icon.png  # Path to the splash screen image for light theme
   color_dark: "#ffffff"  # Background color for dark theme
-  image_dark: assets/bell.png  # Path to the splash screen image for dark theme
+  image_dark: assets/icon.png  # Path to the splash screen image for dark theme
 
   android_12:
-    image: assets/bell.png  # Image specifically for Android 12
+    image: assets/icon.png  # Image specifically for Android 12
     icon_background_color: "#ffffff"  # Background color for the icon on Android 12
-    image_dark: assets/bell.png  # Dark theme image specifically for Android 12
+    image_dark: assets/icon.png  # Dark theme image specifically for Android 12
     icon_background_color_dark: "#ffffff"  # Dark theme icon background color for Android 12
 
   web: false  # Disable web support
